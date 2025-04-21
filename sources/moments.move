@@ -7,6 +7,7 @@ module souv::moments {
     const EEventExpired: u64 = 1;
     const ENotAuthorized: u64 = 2;
     const ESupplyLimitExceeded: u64 = 3;
+    const EInvalidSupplyLimit: u64 = 4;
 
     public struct SOUV1 has drop {}
     public struct SOUV2 has drop {}
@@ -25,7 +26,6 @@ module souv::moments {
         id: UID,
     }
 
-
     public struct NonTransferablePlatform<phantom T> has key {
         id: UID,
     }
@@ -38,7 +38,6 @@ module souv::moments {
         id: UID,
         expiration: u64,
     }
-
 
     public fun create_supply_cap<T>(
         _admin: &AdminCap,
@@ -123,6 +122,15 @@ module souv::moments {
         transfer::transfer(poap, recipient);
     }
 
+    public fun update_supply<T>(
+        _admin: &AdminCap,
+        supply_cap: &mut SupplyCap<T>,
+        new_limit: u64,
+    ) {
+        assert!(option::is_some(&supply_cap.supply_limit), EInvalidSupplyLimit);
+        assert!(new_limit >= supply_cap.minted_count, EInvalidSupplyLimit);
+        supply_cap.supply_limit = option::some(new_limit);
+    }
 
     public fun is_expired<T>(event: &Event<T>, clock: &Clock): bool {
         event.expiration <= clock::timestamp_ms(clock)
@@ -136,6 +144,7 @@ module souv::moments {
             option::none()
         }
     }
+
     public fun transfer_restrict_transferable<T: drop>(
         _admin: &AdminCap,
         poap: RestrictTransferable<T>,
@@ -147,7 +156,7 @@ module souv::moments {
         transfer::transfer(poap, recipient);
     }
 
-      public fun transfer<T>(
+    public fun transfer<T>(
         recipient: address,
         nfts: RestrictTransferable<T>,
         signature_wrapper: &mut PublicKeys,
@@ -155,9 +164,7 @@ module souv::moments {
         msg: vector<u8>,
         _ctx: &mut TxContext,
     ) {
-        verify_platform( signature_wrapper, signed_data, msg);
+        verify_platform(signature_wrapper, signed_data, msg);
         transfer::transfer(nfts, recipient);
     }
-
-
 }

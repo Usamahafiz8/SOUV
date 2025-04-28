@@ -4,7 +4,7 @@ import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 config({});
 
 const signer = async () => {
-  const keypair = Ed25519Keypair.deriveKeypair('actual cigar sunny trumpet elevator horror actual sing violin verb come way');
+  const keypair = Ed25519Keypair.deriveKeypair('acoustic mango victory near beach machine hand lecture night broccoli media name');
 
   return keypair;
 }
